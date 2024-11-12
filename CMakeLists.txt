@@ -42,7 +42,7 @@ endif()
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.cpp)
 file(GLOB_RECURSE headers CONFIGURE_DEPENDS include/*.h include/*.hpp)
-add_executable(${PROJECT_NAME} ${sources} ${headers})
+add_executable(${PROJECT_NAME} ${sources} ${headers} "src/shader.h")
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 add_subdirectory(glm)
