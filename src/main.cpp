@@ -27,22 +27,24 @@ int SRC_HEIGHT = 768;
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, cameraUp));
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 bool firstMouse = true;
 float yaw = -90.f;
 float pitch = 0.0f;
-float lastx = (float)SRC_WIDTH  / 2.0f;
-float lastY = (float)SRC_HEIGHT / 2.0f;
 
-float MixValue = .5f;
+
+float lastx = (float)SRC_WIDTH  / 2.0f;
+float lasty = (float)SRC_HEIGHT / 2.0f;
+
 // Load a texture
 int width1, height1, nrChannels1, width2, height2, nrChannels2, width3, height3, nrChannels3;
 unsigned char* TexData1 = stbi_load(OPENGLTUTOR_HOME "assets/rock.png", &width1, &height1, &nrChannels1, 0);
-
 unsigned char* TexData2 = stbi_load(OPENGLTUTOR_HOME "assets/container.jpg", &width2, &height2, &nrChannels2, 0);
-
 unsigned char* TexData3 = stbi_load(OPENGLTUTOR_HOME "assets/awesomeface.png", &width3, &height3, &nrChannels3, 0);
-
 int main() {
 #ifdef _WIN32
     try {
@@ -389,19 +391,24 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
     // Start main game loop
+   
+
+
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
 
     while (!glfwWindowShouldClose(window))
     {
         // Render graphics
         // game->render();
-        
+
         processInput(window);
 
         glClearColor(.2f, .3f, .3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderProgram1.use();
-        shaderProgram1.setFloat("InMixValue", MixValue);
         shaderProgram1.setInt("ourTexture", 0);
         shaderProgram1.setInt("ourTexture2", 2);
 
@@ -424,7 +431,7 @@ int main() {
         trans2 = glm::translate(trans2, glm::vec3(-.5f, .5f, 0));
         auto scaler = glm::abs(glm::vec3(glm::sin(glfwGetTime()), glm::sin(glfwGetTime()), glm::sin(glfwGetTime())));
         trans2 = glm::scale(trans2, scaler);
-        
+
         shaderProgram2.use();
         shaderProgram2.setInt("InTexture", 1);
         shaderProgram2.setMat4("transform", trans2);
@@ -434,32 +441,35 @@ int main() {
         //glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
         shaderProgram3.use();
-        glm::mat4 view3 = glm::mat4(1.0f);
+
         glm::mat4 projection3 = glm::mat4(1.0f);
-        view3 = glm::translate(view3, glm::vec3(0.0f, 0.0f, -3.0f));
         projection3 = glm::perspective(glm::radians(45.0f), (float)(SRC_WIDTH / SRC_HEIGHT), 0.1f, 100.0f);
 
-        shaderProgram3.setMat4("view", view3);
         shaderProgram3.setMat4("proj", projection3);
 
         glBindVertexArray(VAOs[2]);
-        
+
+        glm::mat4 view3 = glm::mat4(1.0f);
+
+        view3 = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        shaderProgram3.setMat4("view", view3);
+
         for (unsigned int i = 0; i < 10; i++)
         {
-
             glm::mat4 model3 = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
             model3 = glm::translate(model3, cubePositions[i]);
 
             float angle = 20.f * i;
             model3 = glm::rotate(model3, glm::radians(angle), glm::vec3(1.0f, .3f, .5f));
-            
             model3 = glm::rotate(model3, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-            
             shaderProgram3.setMat4("model", model3);
-            
+
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -468,31 +478,78 @@ int main() {
 
     glDeleteVertexArrays(1, VAOs);
     glDeleteBuffers(1, VBOs);
-    
+
     glDeleteProgram(shaderProgram1.ID);
     glDeleteProgram(shaderProgram2.ID);
-    
+
     // game.reset();
     glfwTerminate();
     return 0;
 }
 
+
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+
+    const float cameraSpeed = 2.5f * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        MixValue += .01f;
-        if (MixValue >= 1.0f) MixValue = 1.0f;
+        cameraPos += cameraSpeed * cameraFront;
     }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        MixValue -= .01f;
-        if (MixValue <= 0.0f) MixValue = 0.0f;
+        cameraPos -= cameraSpeed * cameraFront;
     }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        cameraPos -= cameraSpeed * cameraRight;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        cameraPos += cameraSpeed * cameraRight;
+    }
+
 }
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastx = xpos;
+        lasty = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastx;
+    float yoffset = lasty - ypos;
+
+    lastx = xpos;
+    lasty = ypos;
+
+    const float sensitivity = .01f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (pitch > 89.f)
+    {
+        pitch = 89.f;
+    }
+    if (pitch < -89.f)
+    {
+        pitch = -89.f;
+    }
+
+    glm::vec3 cam_direction((glm::radians(yaw) * cos(glm::radians(pitch))), sin(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
+    cameraFront = glm::normalize(cam_direction);
+
+}
+    
 
 #endif
 
-
+    
