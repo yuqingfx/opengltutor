@@ -20,8 +20,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 // Settings
-int SRC_WIDTH = 1024;
-int SRC_HEIGHT = 768;
+int SRC_WIDTH = 800;
+int SRC_HEIGHT = 600;
 
 // camera 
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -528,7 +528,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastx = xpos;
     lasty = ypos;
 
-    const float sensitivity = .01f;
+    const float sensitivity = .1f;
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -543,8 +543,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     {
         pitch = -89.f;
     }
+    float dirx = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    float diry = sin(glm::radians(pitch));
+    float dirz = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
-    glm::vec3 cam_direction((glm::radians(yaw) * cos(glm::radians(pitch))), sin(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
+    glm::vec3 cam_direction(dirx, diry, dirz);
     cameraFront = glm::normalize(cam_direction);
 
 }
