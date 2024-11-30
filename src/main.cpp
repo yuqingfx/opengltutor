@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "shader.h"
+#include "camera.h"
 #include <iostream>
 #include "Game.hpp"
 #include <glm/glm.hpp>
@@ -24,21 +25,16 @@ int SRC_WIDTH = 800;
 int SRC_HEIGHT = 600;
 
 // camera 
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, cameraUp));
+Camera camera(glm::vec3(0.0f, 0.f, 3.f));
+
+float lastx = (float)SRC_WIDTH / 2.0f;
+float lasty = (float)SRC_HEIGHT / 2.0f;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool firstMouse = true;
-float yaw = -90.f;
-float pitch = 0.0f;
 
-
-float lastx = (float)SRC_WIDTH  / 2.0f;
-float lasty = (float)SRC_HEIGHT / 2.0f;
 
 // Load a texture
 int width1, height1, nrChannels1, width2, height2, nrChannels2, width3, height3, nrChannels3;
@@ -391,12 +387,10 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
     // Start main game loop
-   
-
 
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
 
     while (!glfwWindowShouldClose(window))
     {
@@ -443,15 +437,13 @@ int main() {
         shaderProgram3.use();
 
         glm::mat4 projection3 = glm::mat4(1.0f);
-        projection3 = glm::perspective(glm::radians(45.0f), (float)(SRC_WIDTH / SRC_HEIGHT), 0.1f, 100.0f);
+        projection3 = glm::perspective(glm::radians(camera.Zoom), (float)(SRC_WIDTH / SRC_HEIGHT), 0.1f, 100.0f);
 
         shaderProgram3.setMat4("proj", projection3);
 
         glBindVertexArray(VAOs[2]);
 
-        glm::mat4 view3 = glm::mat4(1.0f);
-
-        view3 = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 view3 = camera.GetViewMatrix();
         shaderProgram3.setMat4("view", view3);
 
         for (unsigned int i = 0; i < 10; i++)
@@ -496,19 +488,19 @@ void processInput(GLFWwindow* window)
     const float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        cameraPos += cameraSpeed * cameraFront;
+        camera.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        cameraPos -= cameraSpeed * cameraFront;
+        camera.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        cameraPos -= cameraSpeed * cameraRight;
+        camera.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        cameraPos += cameraSpeed * cameraRight;
+        camera.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
     }
 
 }
@@ -528,31 +520,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastx = xpos;
     lasty = ypos;
 
-    const float sensitivity = .1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    yaw += xoffset;
-    pitch += yoffset;
-
-    if (pitch > 89.f)
-    {
-        pitch = 89.f;
-    }
-    if (pitch < -89.f)
-    {
-        pitch = -89.f;
-    }
-    float dirx = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    float diry = sin(glm::radians(pitch));
-    float dirz = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-
-    glm::vec3 cam_direction(dirx, diry, dirz);
-    cameraFront = glm::normalize(cam_direction);
+    camera.ProcessMouseMovement(xoffset, yoffset);
+    
 
 }
     
-
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(yoffset);
+}
 #endif
 
     

@@ -107,15 +107,16 @@ public:
 			Zoom = 1.0f;
 		if (Zoom > 45.f)
 			Zoom = 45.f;
+		
 	}
 
 private:
 	void UpdateCameraVectors()
 	{
 		glm::vec3 front;
-		front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-		front.y = sin(glm::radians(pitch));
-		front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+		front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+		front.y = sin(glm::radians(Pitch));
+		front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 		Front = glm::normalize(front);
 		Right = glm::normalize(glm::cross(Front, WorldUp));
 		Up = glm::normalize(glm::cross(Right, Front));
