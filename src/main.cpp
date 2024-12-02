@@ -35,12 +35,6 @@ float lastFrame = 0.0f;
 
 bool firstMouse = true;
 
-
-// Load a texture
-int width1, height1, nrChannels1, width2, height2, nrChannels2, width3, height3, nrChannels3;
-unsigned char* TexData1 = stbi_load(OPENGLTUTOR_HOME "assets/rock.png", &width1, &height1, &nrChannels1, 0);
-unsigned char* TexData2 = stbi_load(OPENGLTUTOR_HOME "assets/container.jpg", &width2, &height2, &nrChannels2, 0);
-unsigned char* TexData3 = stbi_load(OPENGLTUTOR_HOME "assets/awesomeface.png", &width3, &height3, &nrChannels3, 0);
 int main() {
 #ifdef _WIN32
     try {
@@ -178,11 +172,7 @@ int main() {
     // Enable V-Sync
     glfwSwapInterval(1);
 
-    Shader shaderProgram1(OPENGLTUTOR_HOME "assets/testVert.vert", OPENGLTUTOR_HOME "assets/testFrag.frag");
-
-    Shader shaderProgram2(OPENGLTUTOR_HOME "assets/testVert2.vert", OPENGLTUTOR_HOME "assets/testFrag2.frag");
-
-    Shader shaderProgram3(OPENGLTUTOR_HOME "assets/CubeVert.vert", OPENGLTUTOR_HOME "assets/CubeFrag.frag");
+    Shader CubeShaderProgram(OPENGLTUTOR_HOME "assets/CubeVert.vert", OPENGLTUTOR_HOME "assets/CubeFrag.frag");
 
     float cube_vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -241,149 +231,30 @@ int main() {
     glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
-    float first_triangle[] =
-    {
-        .5f, .5f, 0.f,
-        .5f, -.5f, 0.f,
-        -.5f, -.5f, 0.f,
-        -.5f, .5f, 0.f
-    };
 
-    float first_colors[] =
-    {
-        1.f, 0.f, 0.f,
-        0.f, 1.f, 0.f,
-        0.f, 0.f, 1.f,
-        1.f, 1.f, 1.f,
-    };
-
-    float first_texCoords[] =
-    {
-        1.f, 1.f,
-        1.0f, 0.f,
-        0.0f, 0.0f,
-        0.f, 1.f
-    };
-
-    int first_indices[] =
-    {
-        0,1,2,3,0,2
-    };
-
-    float second_triangle[] =
-    {
-        // locations  //colors       // tex coords
-        -.5f, .5f, 0.f,   1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        -.5f, 0.f, 0.f,  0.0f, 1.0f, 0.f,  0.0f, 0.0f,
-        0.f, 0.f, 0.f, 0.f, 0.f, 1.f,    0.0f, 1.0f
-    };
-
-    int second_indices[] = { 0,1,2 };
-
-    unsigned int VAOs[3], VBOs[3];
+    GLuint VAO, VBO;
     
-    glGenVertexArrays(3, VAOs);
-    glGenBuffers(3, VBOs);
-
-    glBindVertexArray(VAOs[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(first_triangle), first_triangle, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-      
-    GLuint ColorsVBO;
-    glGenBuffers(1, &ColorsVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, ColorsVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(first_colors), first_colors, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    GLuint TexCoordsVBO;
-    glGenBuffers(1, &TexCoordsVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, TexCoordsVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(first_texCoords), first_texCoords, GL_STATIC_DRAW);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-    GLuint EBO_first;
-    glGenBuffers(1, &EBO_first);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_first);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(first_indices), first_indices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    glBindVertexArray(VAOs[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(second_triangle), second_triangle, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(second_indices), second_indices, GL_STATIC_DRAW);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
     // Cube data
-    glBindVertexArray(VAOs[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
+    GLuint LightVAO;
+    glGenVertexArrays(1, &LightVAO);
+    glBindVertexArray(LightVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
-    unsigned int textures[3];
-    glGenTextures(3, textures);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    if (TexData1)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width1, height1, 0, GL_RGB, GL_UNSIGNED_BYTE, TexData1);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load tex1" << std::endl;
-    }
-    stbi_image_free(TexData1);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    
-    if (TexData2)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, TexData2);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load tex2" << std::endl;
-    }
-    stbi_image_free(TexData2);
-
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, textures[2]);
-    if (TexData3)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width3, height3, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexData3);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load tex3" << std::endl;
-    }
-    stbi_image_free(TexData3);
 
     glEnable(GL_DEPTH_TEST);
     // Start main game loop
@@ -402,62 +273,26 @@ int main() {
         glClearColor(.2f, .3f, .3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shaderProgram1.use();
-        shaderProgram1.setInt("ourTexture", 0);
-        shaderProgram1.setInt("ourTexture2", 2);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(-55.f), glm::vec3(1.0f, 0.f, 0.f));
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.f), (float)(SRC_WIDTH / SRC_HEIGHT), .1f, 100.f);
-
-        shaderProgram1.setMat4("model", model);
-        shaderProgram1.setMat4("view", view);
-        shaderProgram1.setMat4("proj", projection);
-
-        glBindVertexArray(VAOs[0]);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_first);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        glm::mat4 trans2 = glm::mat4(1.0f);
-        trans2 = glm::translate(trans2, glm::vec3(-.5f, .5f, 0));
-        auto scaler = glm::abs(glm::vec3(glm::sin(glfwGetTime()), glm::sin(glfwGetTime()), glm::sin(glfwGetTime())));
-        trans2 = glm::scale(trans2, scaler);
-
-        shaderProgram2.use();
-        shaderProgram2.setInt("InTexture", 1);
-        shaderProgram2.setMat4("transform", trans2);
-
-        glBindVertexArray(VAOs[1]);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        //glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-
-        shaderProgram3.use();
+        
+        CubeShaderProgram.use();
 
         glm::mat4 projection3 = glm::mat4(1.0f);
         projection3 = glm::perspective(glm::radians(camera.Zoom), (float)(SRC_WIDTH / SRC_HEIGHT), 0.1f, 100.0f);
 
-        shaderProgram3.setMat4("proj", projection3);
+        CubeShaderProgram.setMat4("proj", projection3);
 
-        glBindVertexArray(VAOs[2]);
+        glBindVertexArray(VAO);
 
         glm::mat4 view3 = camera.GetViewMatrix();
-        shaderProgram3.setMat4("view", view3);
+        CubeShaderProgram.setMat4("view", view3);
 
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            glm::mat4 model3 = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            model3 = glm::translate(model3, cubePositions[i]);
+        // make sure to initialize matrix to identity matrix first
+        glm::mat4 model3 = glm::mat4(1.0f); 
 
-            float angle = 20.f * i;
-            model3 = glm::rotate(model3, glm::radians(angle), glm::vec3(1.0f, .3f, .5f));
-            model3 = glm::rotate(model3, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-            shaderProgram3.setMat4("model", model3);
+        model3 = glm::translate(model3, cubePositions[0]);
+        CubeShaderProgram.setMat4("model", model3);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -468,11 +303,10 @@ int main() {
 
     }
 
-    glDeleteVertexArrays(1, VAOs);
-    glDeleteBuffers(1, VBOs);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 
-    glDeleteProgram(shaderProgram1.ID);
-    glDeleteProgram(shaderProgram2.ID);
+    glDeleteProgram(CubeShaderProgram.ID);
 
     // game.reset();
     glfwTerminate();
