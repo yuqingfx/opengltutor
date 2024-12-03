@@ -232,7 +232,6 @@ int main() {
     glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
-
     GLuint VAO, VBO;
     
     glGenVertexArrays(1, &VAO);
@@ -246,7 +245,7 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-     
+
     // LightSource data
     GLuint LightVAO;
     glGenVertexArrays(1, &LightVAO);
