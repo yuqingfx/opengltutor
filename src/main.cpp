@@ -34,6 +34,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool firstMouse = true;
+glm::vec3 LightPos(1.2f, 1.0f, 1.0f);
 
 int main() {
 #ifdef _WIN32
@@ -251,7 +252,7 @@ int main() {
     glGenVertexArrays(1, &LightVAO);
     glBindVertexArray(LightVAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -277,7 +278,7 @@ int main() {
         CubeShaderProgram.use();
         CubeShaderProgram.setVec3("objectColor", 1.0f, .5f, .31f);
         CubeShaderProgram.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-
+        CubeShaderProgram.setVec3("lightPos", LightPos);
         glm::mat4 projection3 = glm::mat4(1.0f);
         projection3 = glm::perspective(glm::radians(camera.Zoom), (float)(SRC_WIDTH / SRC_HEIGHT), 0.1f, 100.0f);
 
@@ -298,7 +299,7 @@ int main() {
 
         // light source
         LightSourceShader.use();
-        glm::vec3 LightPos(1.2f, 1.0f, 2.0f);
+        
         glm::mat4 model_LS(1.0f);
         model_LS = glm::translate(model_LS, LightPos);
         model_LS = glm::scale(model_LS, glm::vec3(.2f));
