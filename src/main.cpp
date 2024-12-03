@@ -34,7 +34,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool firstMouse = true;
-glm::vec3 LightPos(1.2f, 1.0f, 1.0f);
+glm::vec3 LightPos(.4f, 1.0f, .5f);
 
 int main() {
 #ifdef _WIN32
@@ -279,6 +279,8 @@ int main() {
         CubeShaderProgram.setVec3("objectColor", 1.0f, .5f, .31f);
         CubeShaderProgram.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         CubeShaderProgram.setVec3("lightPos", LightPos);
+        CubeShaderProgram.setVec3("viewPos", camera.Position);
+
         glm::mat4 projection3 = glm::mat4(1.0f);
         projection3 = glm::perspective(glm::radians(camera.Zoom), (float)(SRC_WIDTH / SRC_HEIGHT), 0.1f, 100.0f);
 
