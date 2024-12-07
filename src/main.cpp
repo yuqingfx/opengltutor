@@ -37,7 +37,8 @@ float lastFrame = 0.0f;
 bool firstMouse = true;
 glm::vec3 LightPos(.4f, 1.0f, .5f);
 glm::vec3 LightColor(.5f, .5f, .5f);
-glm::vec3 LightIntensity(.2f, .2f, .2f);
+float LightIntensityValue = .8f;
+glm::vec3 LightIntensity(LightIntensityValue, LightIntensityValue, LightIntensityValue);
 glm::vec3 LightSpecIntensity(1.0f, 1.0f, 1.0f);
 int main() {
 #ifdef _WIN32
@@ -286,16 +287,22 @@ int main() {
         
         CubeShaderProgram.use();
 
-        // vs stage
+        // cube vs stage
         CubeShaderProgram.setVec3("viewPos", camera.Position);
 
-        // ps stage
+        // cube ps stage
         CubeShaderProgram.setFloat("time", glfwGetTime());
 
         CubeShaderProgram.setVec3("light.ambient", LightIntensity);
         CubeShaderProgram.setVec3("light.diffuse", LightColor);
         CubeShaderProgram.setVec3("light.specular", LightSpecIntensity);
         CubeShaderProgram.setVec3("light.position", LightPos);
+
+        // only used for directional light
+        CubeShaderProgram.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+        CubeShaderProgram.setFloat("light.k_constant", 1.0f);
+        CubeShaderProgram.setFloat("light.k_linear", 0.09);
+        CubeShaderProgram.setFloat("light.k_quadratic", 0.032);
 
         CubeShaderProgram.setInt("mat.diffuse",  0); 
         CubeShaderProgram.setInt("mat.specular", 1);
@@ -310,10 +317,7 @@ int main() {
         CubeShaderProgram.setMat4("view", view3);
 
         // make sure to initialize matrix to identity matrix first
-        glm::mat4 model3 = glm::mat4(1.0f); 
-
-        model3 = glm::translate(model3, cubePositions[0]);
-        CubeShaderProgram.setMat4("model", model3);
+       
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
@@ -323,10 +327,20 @@ int main() {
 
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, emissionMap);
+       
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            glm::mat4 model3 = glm::mat4(1.0f);
+            model3 = glm::translate(model3, cubePositions[i]);
+            float angle = 20.f * i;
+            model3 = glm::rotate(model3, glm::radians(angle), glm::vec3(1.0f, .3f, .5f));
+            model3 = glm::rotate(model3, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
 
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
+            CubeShaderProgram.setMat4("model", model3);
+            glBindVertexArray(VAO);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        
         // light source
         LightSourceShader.use();
 
