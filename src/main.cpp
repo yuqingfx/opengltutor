@@ -299,12 +299,10 @@ int main() {
         CubeShaderProgram.setVec3("light.diffuse", LightColor);
         CubeShaderProgram.setVec3("light.specular", LightSpecIntensity);
         CubeShaderProgram.setVec3("light.position", LightPos);
+        CubeShaderProgram.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+        CubeShaderProgram.setFloat("light.cutoff", glm::cos(glm::radians(12.5f)));
+        CubeShaderProgram.setFloat("light.outercutoff", glm::cos(glm::radians(17.5f)));
 
-        // only used for directional light
-        // CubeShaderProgram.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
-        CubeShaderProgram.setFloat("light.k_constant", 1.0f);
-        CubeShaderProgram.setFloat("light.k_linear", 0.09);
-        CubeShaderProgram.setFloat("light.k_quadratic", 0.032);
 
         CubeShaderProgram.setInt("mat.diffuse",  0); 
         CubeShaderProgram.setInt("mat.specular", 1);

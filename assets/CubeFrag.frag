@@ -15,9 +15,7 @@ struct DirectionalLight
 	vec3 diffuse;
 	vec3 specular;
 	vec3 direction; 
-
 };
-
 
 struct PointLight
 {
@@ -31,8 +29,20 @@ struct PointLight
 	float k_quadratic;
 };
 
+struct SpotLight
+{
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	vec3 position; 
+	vec3 direction;
+	
+	float cutoff;
+	float outercutoff;
+};
 
-uniform PointLight light;
+
+uniform SpotLight light;
 uniform Material mat;
 
 out vec4 FragColor;
@@ -71,8 +81,11 @@ void main()
 	vec3 emission = texture(mat.emission, TexCoord * (1.0 + ds * 2) - ds).rgb;
 	emission = emission * (sin(time) * 0.5 + 0.5) * 2.0;
 	
-	float attenuation = 1.0 / (light.k_constant + light.k_linear * dist + light.k_quadratic * pow(dist,2));
+	float theta = dot(lightDir, normalize(-light.direction));
+	float epsilon = light.cutoff - light.outercutoff;
+	float intensity = clamp( (theta - light.outercutoff) / epsilon, 0.0, 1.0);
 
-	vec3 result = ambient * attenuation + diffuse * attenuation + specular * attenuation;
-	FragColor = vec4(result, 1.0);
+	
+	vec3 color = ambient * intensity + diffuse * intensity + specular * intensity;
+	FragColor = vec4(color, 1.0);
 } 
