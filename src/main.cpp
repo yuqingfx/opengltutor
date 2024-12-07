@@ -37,9 +37,11 @@ float lastFrame = 0.0f;
 bool firstMouse = true;
 glm::vec3 LightPos(.4f, 1.0f, .5f);
 glm::vec3 LightColor(.5f, .5f, .5f);
-float LightIntensityValue = .8f;
+float LightIntensityValue = .2f;
 glm::vec3 LightIntensity(LightIntensityValue, LightIntensityValue, LightIntensityValue);
-glm::vec3 LightSpecIntensity(1.0f, 1.0f, 1.0f);
+float LightSpecIntensityValue = 1.0f;
+glm::vec3 LightSpecIntensity(LightSpecIntensityValue, LightSpecIntensityValue, LightSpecIntensityValue);
+
 int main() {
 #ifdef _WIN32
     try {
@@ -299,7 +301,7 @@ int main() {
         CubeShaderProgram.setVec3("light.position", LightPos);
 
         // only used for directional light
-        CubeShaderProgram.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+        // CubeShaderProgram.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
         CubeShaderProgram.setFloat("light.k_constant", 1.0f);
         CubeShaderProgram.setFloat("light.k_linear", 0.09);
         CubeShaderProgram.setFloat("light.k_quadratic", 0.032);

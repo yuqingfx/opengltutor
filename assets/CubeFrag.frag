@@ -9,21 +9,30 @@ struct Material
 
 };
 
-struct Light
+struct DirectionalLight
 {
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
-	
+	vec3 direction; 
+
+};
+
+
+struct PointLight
+{
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
 	vec3 position; 
-	vec3 direction;
 
 	float k_constant;
 	float k_linear;
 	float k_quadratic;
 };
 
-uniform Light light;
+
+uniform PointLight light;
 uniform Material mat;
 
 out vec4 FragColor;
