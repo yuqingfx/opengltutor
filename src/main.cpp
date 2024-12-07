@@ -270,6 +270,7 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     unsigned int diffuseMap = loadTexture("assets/container2.png");
+    unsigned int specularMap = loadTexture("assets/container2_spec.png");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -292,8 +293,8 @@ int main() {
         CubeShaderProgram.setVec3("light.specular", 1.f, 1.f, 1.f);
         CubeShaderProgram.setVec3("light.position", LightPos);
 
-        CubeShaderProgram.setInt("mat.diffuse", 0); // uses as object color
-        CubeShaderProgram.setVec3("mat.specular", .5f, .5f, .5f);
+        CubeShaderProgram.setInt("mat.diffuse", 0); 
+        CubeShaderProgram.setInt("mat.specular", 1);
         CubeShaderProgram.setFloat("mat.shininess", 32.f);
 
         glm::mat4 projection3 = glm::mat4(1.0f);
@@ -313,7 +314,8 @@ int main() {
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
-
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
