@@ -290,6 +290,8 @@ int main() {
         CubeShaderProgram.setVec3("viewPos", camera.Position);
 
         // ps stage
+        CubeShaderProgram.setFloat("time", glfwGetTime());
+
         CubeShaderProgram.setVec3("light.ambient", LightIntensity);
         CubeShaderProgram.setVec3("light.diffuse", LightColor);
         CubeShaderProgram.setVec3("light.specular", LightSpecIntensity);
@@ -441,8 +443,8 @@ unsigned int loadTexture(std::string InAssetPath)
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, TexData);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
