@@ -13,6 +13,7 @@ struct Light
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
+	vec3 position;
 };
 
 uniform Light light;
@@ -31,10 +32,10 @@ uniform vec3 viewPos;
 void main()
 {
 	
-	vec3 ambient = light.ambient * vec3(texture(mat.ambient, TexCoord));
+	vec3 ambient = light.ambient * vec3(texture(mat.diffuse, TexCoord));
 	
 	vec3 norm = normalize(Normal);
-	vec3 lightDir = normalize(lightPos - FragPos);
+	vec3 lightDir = normalize(light.position- FragPos);
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec3 diffuse = light.diffuse * diff * vec3(texture(mat.diffuse, TexCoord));
 

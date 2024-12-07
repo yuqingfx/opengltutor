@@ -19,6 +19,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+unsigned int loadTexture(std::string InAssetPath);
 
 // Settings
 int SRC_WIDTH = 800;
@@ -236,7 +237,6 @@ int main() {
 
 
     GLuint VAO, VBO;
-    
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -246,7 +246,7 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
@@ -256,7 +256,7 @@ int main() {
     glGenVertexArrays(1, &LightVAO);
     glBindVertexArray(LightVAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -268,6 +268,8 @@ int main() {
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    unsigned int diffuseMap = loadTexture("assets/container2.png");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -281,24 +283,23 @@ int main() {
         
         CubeShaderProgram.use();
 
+        // vs stage
+        CubeShaderProgram.setVec3("viewPos", camera.Position);
+
+        // ps stage
         CubeShaderProgram.setVec3("light.ambient", .2f, .2f, .2f);
         CubeShaderProgram.setVec3("light.diffuse", LightColor);
         CubeShaderProgram.setVec3("light.specular", 1.f, 1.f, 1.f);
-        CubeShaderProgram.setVec3("lightPos", LightPos);
-        CubeShaderProgram.setVec3("viewPos", camera.Position);
+        CubeShaderProgram.setVec3("light.position", LightPos);
 
-        CubeShaderProgram.setVec3("mat.ambient", 1.0f, .5f, .31f); // uses as object color
         CubeShaderProgram.setInt("mat.diffuse", 0); // uses as object color
-        CubeShaderProgram.setVec3("mat.specular", .5f, .5f, .5f);  // uses as object color
+        CubeShaderProgram.setVec3("mat.specular", .5f, .5f, .5f);
         CubeShaderProgram.setFloat("mat.shininess", 32.f);
-
 
         glm::mat4 projection3 = glm::mat4(1.0f);
         projection3 = glm::perspective(glm::radians(camera.Zoom), (float)(SRC_WIDTH / SRC_HEIGHT), 0.1f, 100.0f);
-
         CubeShaderProgram.setMat4("proj", projection3);
-
-        glBindVertexArray(VAO);
+        
 
         glm::mat4 view3 = camera.GetViewMatrix();
         CubeShaderProgram.setMat4("view", view3);
@@ -309,6 +310,11 @@ int main() {
         model3 = glm::translate(model3, cubePositions[0]);
         CubeShaderProgram.setMat4("model", model3);
 
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseMap);
+
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // light source
@@ -393,12 +399,55 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     camera.ProcessMouseMovement(xoffset, yoffset);
     
-
 }
     
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
+}
+
+unsigned int loadTexture(std::string InAssetPath)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrChannels;
+    std::string FullAssetPath = std::string(OPENGLTUTOR_HOME) + InAssetPath;
+    unsigned char* TexData = stbi_load(FullAssetPath.c_str(), &width, &height, &nrChannels, 0);
+    if (TexData)
+    {
+        GLenum format;
+        if (nrChannels == 1)
+        {
+            format = GL_RED;
+        }
+        else if (nrChannels == 3)
+        {
+            format = GL_RGB;
+        }
+        else if (nrChannels == 4)
+        {
+            format = GL_RGBA;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, TexData);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(TexData);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << FullAssetPath << std::endl;
+        stbi_image_free(TexData);
+    }
+
+    return textureID;
 }
 #endif
 
