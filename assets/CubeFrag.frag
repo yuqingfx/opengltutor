@@ -66,7 +66,7 @@ void main()
 	//vec3 lightDir = normalize(-light.direction);
 	vec3 lightDir = normalize(light.position - FragPos);
 	float dist = length(light.position - FragPos);
-
+	
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec3 diffuse = light.diffuse * diff * vec3(texture(mat.diffuse, TexCoord));
 
@@ -84,8 +84,12 @@ void main()
 	float theta = dot(lightDir, normalize(-light.direction));
 	float epsilon = light.cutoff - light.outercutoff;
 	float intensity = clamp( (theta - light.outercutoff) / epsilon, 0.0, 1.0);
+	if (dot(norm, lightDir)<0.0)
+	{
+		intensity = 0;
+	}
 
-	
+
 	vec3 color = ambient * intensity + diffuse * intensity + specular * intensity;
 	FragColor = vec4(color, 1.0);
 } 
