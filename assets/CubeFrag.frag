@@ -41,7 +41,25 @@ struct SpotLight
 	float outercutoff;
 };
 
+vec3 CalcDirLight(DirectionalLight dirLight, vec3 normal, vec3 viewDir, Material mat, vec2 TexCoord)
+{
+	vec3 lightDir = normalize(-dirLight.direction);
 
+	// diffuse shading
+	float diff = max(dot(normal, lightDir), 0.0);
+
+	// specular shading
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), mat.shininess);
+
+	vec3 ambient = dirLight.ambient * vec3(texture(mat.diffuse, TexCoord));
+	vec3 diffuse = dirLight.diffuse * diff * vec3(texture(mat.diffuse, TexCoord));
+	vec3 specular = dirLight.specular * spec * vec3(texture(mat.specular, TexCoord));
+
+	return (ambient + diffuse + specular);
+}
+
+uniform DirectionalLight dirLight;
 uniform SpotLight light;
 uniform Material mat;
 
