@@ -35,12 +35,24 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool firstMouse = true;
-glm::vec3 LightPos(.4f, 1.0f, .5f);
-glm::vec3 LightColor(.5f, .5f, .5f);
-float LightIntensityValue = .2f;
-glm::vec3 LightIntensity(LightIntensityValue, LightIntensityValue, LightIntensityValue);
+glm::vec3 SpotLightPos(.4f, 1.0f, .5f);
+glm::vec3 DirLightColor(.5f, .5f, .5f);
+float DirLightIntensityValue = .2f;
+glm::vec3 DirLightIntensity(DirLightIntensityValue, DirLightIntensityValue, DirLightIntensityValue);
 float LightSpecIntensityValue = 1.0f;
 glm::vec3 LightSpecIntensity(LightSpecIntensityValue, LightSpecIntensityValue, LightSpecIntensityValue);
+
+// positions of the point lights
+glm::vec3 pointLightPositions[] = {
+    glm::vec3(0.7f,  0.2f,  2.0f),
+    glm::vec3(2.3f, -3.3f, -4.0f),
+    glm::vec3(-4.0f,  2.0f, -12.0f),
+    glm::vec3(0.0f,  0.0f, -3.0f)
+};
+
+// Light source settings
+glm::vec3 LightSourceColor(1.0f, 1.0f, 1.0f);
+glm::vec3 LightSourcePosition(1.2f, 1.0f, 2.0f);
 
 int main() {
 #ifdef _WIN32
@@ -295,14 +307,58 @@ int main() {
         // cube ps stage
         CubeShaderProgram.setFloat("time", glfwGetTime());
 
-        CubeShaderProgram.setVec3("light.ambient", LightIntensity);
-        CubeShaderProgram.setVec3("light.diffuse", LightColor);
-        CubeShaderProgram.setVec3("light.specular", LightSpecIntensity);
-        CubeShaderProgram.setVec3("light.position", LightPos);
-        CubeShaderProgram.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
-        CubeShaderProgram.setFloat("light.cutoff", glm::cos(glm::radians(12.5f)));
-        CubeShaderProgram.setFloat("light.outercutoff", glm::cos(glm::radians(17.5f)));
+        CubeShaderProgram.setVec3("dirLight.ambient", DirLightIntensity);
+        CubeShaderProgram.setVec3("dirLight.diffuse", DirLightColor);
+        CubeShaderProgram.setVec3("dirLight.specular", LightSpecIntensity);
+        CubeShaderProgram.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
 
+        // point light 1
+        CubeShaderProgram.setVec3("pointLights[0].position", pointLightPositions[0]);
+        CubeShaderProgram.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+        CubeShaderProgram.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+        CubeShaderProgram.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        CubeShaderProgram.setFloat("pointLights[0].k_constant", 1.0f);
+        CubeShaderProgram.setFloat("pointLights[0].k_linear", 0.09f);
+        CubeShaderProgram.setFloat("pointLights[0].k_quadratic", 0.032f);
+        // point light 2
+        CubeShaderProgram.setVec3("pointLights[1].position", pointLightPositions[1]);
+        CubeShaderProgram.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+        CubeShaderProgram.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+        CubeShaderProgram.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+        CubeShaderProgram.setFloat("pointLights[1].k_constant", 1.0f);
+        CubeShaderProgram.setFloat("pointLights[1].k_linear", 0.09f);
+        CubeShaderProgram.setFloat("pointLights[1].k_quadratic", 0.032f);
+        // point light 3
+        CubeShaderProgram.setVec3("pointLights[2].position", pointLightPositions[2]);
+        CubeShaderProgram.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+        CubeShaderProgram.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+        CubeShaderProgram.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+        CubeShaderProgram.setFloat("pointLights[2].k_constant", 1.0f);
+        CubeShaderProgram.setFloat("pointLights[2].k_linear", 0.09f);
+        CubeShaderProgram.setFloat("pointLights[2].k_quadratic", 0.032f);
+        // point light 4
+        CubeShaderProgram.setVec3("pointLights[3].position", pointLightPositions[3]);
+        CubeShaderProgram.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+        CubeShaderProgram.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+        CubeShaderProgram.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+        CubeShaderProgram.setFloat("pointLights[3].k_constant", 1.0f);
+        CubeShaderProgram.setFloat("pointLights[3].k_linear", 0.09f);
+        CubeShaderProgram.setFloat("pointLights[3].k_quadratic", 0.032f);
+
+        // spotLight
+        CubeShaderProgram.setVec3("spotLight.position", camera.Position);
+        CubeShaderProgram.setVec3("spotLight.direction", camera.Front);
+        CubeShaderProgram.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        CubeShaderProgram.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        CubeShaderProgram.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        CubeShaderProgram.setFloat("spotLight.k_constant", 1.0f);
+        CubeShaderProgram.setFloat("spotLight.k_linear", 0.09f);
+        CubeShaderProgram.setFloat("spotLight.quadratic", 0.032f);
+        CubeShaderProgram.setFloat("spotLight.cutoff", glm::cos(glm::radians(12.5f)));
+        CubeShaderProgram.setFloat("spotLight.outercutoff", glm::cos(glm::radians(15.0f)));
+
+        //CubeShaderProgram.setFloat("light.cutoff", glm::cos(glm::radians(12.5f)));
+        //CubeShaderProgram.setFloat("light.outercutoff", glm::cos(glm::radians(17.5f)));
 
         CubeShaderProgram.setInt("mat.diffuse",  0); 
         CubeShaderProgram.setInt("mat.specular", 1);
@@ -317,8 +373,6 @@ int main() {
         CubeShaderProgram.setMat4("view", view3);
 
         // make sure to initialize matrix to identity matrix first
-       
-        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
@@ -343,13 +397,9 @@ int main() {
         
         // light source
         LightSourceShader.use();
+        LightSourceShader.setVec3("lightColor", LightSourceColor);
 
-        LightSourceShader.setVec3("lightColor", LightColor);
-
-        glm::mat4 model_LS(1.0f);
-        model_LS = glm::translate(model_LS, LightPos);
-        model_LS = glm::scale(model_LS, glm::vec3(.2f));
-        LightSourceShader.setMat4("model", model_LS);
+       
 
         glm::mat4 view_LS = camera.GetViewMatrix();
         LightSourceShader.setMat4("view", view_LS);
@@ -359,7 +409,14 @@ int main() {
         LightSourceShader.setMat4("projection", projection_LS);
 
         glBindVertexArray(LightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (int i = 0; i < 4; i++)
+        {
+            glm::mat4 model_LS(1.0f);
+            model_LS = glm::translate(model_LS, pointLightPositions[i]);
+            model_LS = glm::scale(model_LS, glm::vec3(.2f));
+            LightSourceShader.setMat4("model", model_LS);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
