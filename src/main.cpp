@@ -2,13 +2,14 @@
 //#include "check_gl.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include "shader.h"
+//#include "shader.h"
 #include "camera.h"
 #include <iostream>
 #include "Game.hpp"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/type_ptr.hpp>
+#include "DataStructures.h"
 
 #ifdef _WIN32
 #include <windows.h>
