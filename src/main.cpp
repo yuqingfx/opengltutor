@@ -9,7 +9,7 @@
 //#include <glm/glm.hpp>
 //#include <glm/gtc/matrix_transform.hpp>
 //#include <glm/gtc/type_ptr.hpp>
-#include "DataStructures.h"
+#include "mesh.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -399,8 +399,6 @@ int main() {
         // light source
         LightSourceShader.use();
         LightSourceShader.setVec3("lightColor", LightSourceColor);
-
-       
 
         glm::mat4 view_LS = camera.GetViewMatrix();
         LightSourceShader.setMat4("view", view_LS);
