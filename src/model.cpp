@@ -1,7 +1,9 @@
 #include "model.h"
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h"
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include "stb_image.h"
 
 void Model::Draw(Shader& shader)
 {
@@ -111,7 +113,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-	
+
 	std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
@@ -121,13 +123,75 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
-	if (mesh->mMaterialIndex >= 0)
-	{
-		// TODO: process materials
-	}
 
 	
 	return Mesh(vertices, indices, textures);
+}
+
+std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+{
+	std::vector<Texture> textures;
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+	{
+		aiString str;
+		mat->GetTexture(type, i, &str);
+
+		// TODO: optimization here
+		Texture texture;
+		texture.id = TextureFromFile(str.C_Str(), directory);
+		texture.type = typeName;
+		texture.path = str.C_Str();
+		textures.push_back(texture);
+
+	}
+	return textures;
+}
+
+unsigned int Model::TextureFromFile(const char* path, const std::string& directory)
+{
+	std::string filename = std::string(path);
+	filename = directory + '/' + filename;
+
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrChannels;
+	unsigned char* TexData = stbi_load(directory.c_str(), &width, &height, &nrChannels, 0);
+	if (TexData)
+	{
+		GLenum format;
+		if (nrChannels == 1)
+		{
+			format = GL_RED;
+		}
+		else if (nrChannels == 3)
+		{
+			format = GL_RGB;
+		}
+		else if (nrChannels == 4)
+		{
+			format = GL_RGBA;
+		}
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, TexData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(TexData);
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << directory << std::endl;
+		stbi_image_free(TexData);
+	}
+
+	return textureID;
+	
 }
 
 
